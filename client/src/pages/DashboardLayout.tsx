@@ -26,7 +26,7 @@ export const loader = async () => {
     const { data } = await customFetch("/users/current-user");
     return data;
   } catch (error) {
-    return redirect("/");
+    return redirect("/login");
   }
 };
 

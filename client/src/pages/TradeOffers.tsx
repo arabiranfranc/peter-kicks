@@ -18,8 +18,14 @@ type TradeItem = {
 
 type TradeOffer = {
   _id: string;
-  userOne: string;
-  userTwo: string;
+  userOne: {
+    name: string;
+    lastName: string;
+  };
+  userTwo: {
+    name: string;
+    lastName: string;
+  };
   userOneItems: TradeItem[];
   userTwoItems: TradeItem[];
   userOneTotalPrice: number;
@@ -47,7 +53,7 @@ const TradeOffers: React.FC = () => {
 
   const updateStatus = async (tradeId: string, newStatus: string) => {
     try {
-      await customFetch.patch(`/trade/update-status/${tradeId}`, {
+      await customFetch.patch(`/trade/trade-offer/${tradeId}`, {
         status: newStatus,
       });
 
@@ -65,7 +71,7 @@ const TradeOffers: React.FC = () => {
 
   return (
     <div className="p-6 text-white space-y-6">
-      <h1 className="text-2xl font-bold mb-4">Trade Offers</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">Trade Offers</h1>
 
       {offers.map((offer) => (
         <div
@@ -79,7 +85,7 @@ const TradeOffers: React.FC = () => {
           <div className="grid md:grid-cols-2 gap-4">
             {/* User One Items */}
             <div>
-              <h2 className="text-lg font-semibold mb-2">User One Items</h2>
+              <h2 className="text-lg font-semibold mb-2">{`${offer.userOne.name} ${offer.userOne.lastName}`}</h2>
               <div className="space-y-2">
                 {offer.userOneItems.map((item) => (
                   <div
@@ -105,7 +111,7 @@ const TradeOffers: React.FC = () => {
 
             {/* User Two Items */}
             <div>
-              <h2 className="text-lg font-semibold mb-2">User Two Items</h2>
+              <h2 className="text-lg font-semibold mb-2">{`${offer.userTwo.name} ${offer.userTwo.lastName}`}</h2>
               <div className="space-y-2">
                 {offer.userTwoItems.map((item) => (
                   <div

@@ -1,10 +1,10 @@
 import { FaUserCircle, FaCaretDown } from "react-icons/fa";
 import { useState } from "react";
-import { useDashboardContext } from "../pages/DashboardLayout";
+import { useUserContext } from "../hooks/useUserContext";
 
 const LogoutContainer: React.FC = () => {
   const [showLogout, setShowLogout] = useState(false);
-  const { user, logoutUser } = useDashboardContext();
+  const { user, logoutUser } = useUserContext();
 
   return (
     <div className="relative">
@@ -22,7 +22,6 @@ const LogoutContainer: React.FC = () => {
         ) : (
           <FaUserCircle className="w-6 h-6" />
         )}
-
         <span className="ml-2">{user?.name}</span>
         <FaCaretDown className="ml-1" />
       </button>

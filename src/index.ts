@@ -51,9 +51,9 @@ app.post("/", (req, res) => {
   res.json({ message: "Data received", data: req.body });
 });
 
-app.use("/api/shop", authenticateUser, itemRouter);
+app.use("/api/shop", itemRouter);
 app.use("/api/orders", authenticateUser, orderRouter);
-app.use("/api/trade", authenticateUser, tradeItemsRouter);
+app.use("/api/trade", tradeItemsRouter);
 app.use("/api/users", authenticateUser, userRouter);
 app.use("/api/dashboard", authenticateUser, dashboardRouter);
 app.use("/api/auth", authRouter);

@@ -2,6 +2,7 @@ import axios, { AxiosError } from "axios";
 
 const customFetch = axios.create({
   baseURL: "/api",
+  withCredentials: true,
 });
 
 customFetch.interceptors.response.use(

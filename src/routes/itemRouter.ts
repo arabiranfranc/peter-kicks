@@ -11,13 +11,14 @@ import {
   validateItemIdParam,
   validateItemInput,
 } from "../middleware/validationMiddleware.js";
+import { authenticateUser } from "../middleware/authMiddleWare.js";
 
 const router = Router();
 
 router
   .route("/")
   .get(getAllItems)
-  .post(upload.single("img"), validateItemInput, createItem);
+  .post(upload.single("img"), authenticateUser, validateItemInput, createItem);
 
 router
   .route("/:id")

@@ -157,7 +157,8 @@ export const getUserTradeOffers = async (
       $or: [{ userOne: objectUserId }, { userTwo: objectUserId }],
     })
       .sort({ createdAt: -1 })
-      .lean(); // optional for faster response if you don't need methods
+      .lean()
+      .populate("userOne userTwo");
 
     res.status(StatusCodes.OK).json(trades);
   } catch (error) {
@@ -177,6 +178,25 @@ export const updateTradeOffer = async (
       return;
     }
 
+    const tradeOffer = await Trade.findById(req.params.id).populate(
+      "userOne userTwo"
+    );
+
+    if (!tradeOffer) {
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Trade offer not found." });
+      return;
+    }
+
+    // ✅ Validate if the current user is userOne
+    if (tradeOffer.userOne?._id.toString() !== req.user.userId) {
+      res
+        .status(StatusCodes.FORBIDDEN)
+        .json({ message: "You are not allowed to update this trade offer." });
+      return;
+    }
+
     const { status } = req.body;
 
     const updatedTradeOffer = await Trade.findByIdAndUpdate(
@@ -185,18 +205,10 @@ export const updateTradeOffer = async (
       { new: true, runValidators: true }
     ).populate("userOne userTwo");
 
-    if (!updatedTradeOffer) {
-      res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ message: "Trade offer not found." });
-      return;
-    }
-
     if (status === "accepted") {
-      const allItemIds = [
-        ...updatedTradeOffer.userOneItems.map((item) => item.itemId),
-      ];
-
+      const allItemIds = updatedTradeOffer?.userOneItems.map(
+        (item) => item.itemId
+      );
       await TradeItem.updateMany(
         { _id: { $in: allItemIds } },
         { $set: { itemStatus: "accepted" } }

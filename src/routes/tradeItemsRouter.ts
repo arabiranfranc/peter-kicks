@@ -44,6 +44,6 @@ router
 
 router
   .route("/trade-offer/:id")
-  .patch(validateItemIdParam, updateTradeOffer)
-  .delete(validateItemIdParam, deleteTradeOffer);
+  .patch(updateTradeOffer)
+  .delete(deleteTradeOffer);
 export default router;

@@ -56,12 +56,10 @@ export const validateItemInput = withValidationErrors([
 
 export const validateItemIdParam = withValidationErrors([
   param("id").custom(async (value, { req }) => {
-    console.log("🚨 VALIDATE ID PARAM:", value); // ADD THIS LINE
-
     const isValidMongoId = mongoose.Types.ObjectId.isValid(value);
     if (!isValidMongoId) throw new BadRequestError("invalid MongoDB id");
     const item = await Item.findById(value);
-    if (!item) throw new NotFoundError(`no job with id ${value}`);
+    if (!item) throw new NotFoundError(`no item with id ${value}`);
     const isAdmin = req.user.role === "admin";
     const isOwner = req.user.userId === item.createdBy.toString();
     if (!isAdmin && !isOwner)
