@@ -58,7 +58,7 @@ const DashboardLayout: React.FC = () => {
       flex flex-col
     "
       >
-        <Navbar setIsOpen={setIsOpen} />
+        <Navbar setIsOpen={setIsOpen} user={user} logoutUser={logoutUser} />
 
         <div className="flex flex-1 overflow-hidden">
           <Sidebar isOpen={isOpen} onClose={closeSidebar} />

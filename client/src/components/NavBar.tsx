@@ -4,7 +4,10 @@ import type { Dispatch, SetStateAction } from "react";
 import LogoutContainer from "./LogoutContainer";
 
 type NavbarProps = {
+  isPublic?: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  user?: { name: string; avatar?: string } | null;
+  logoutUser?: () => void;
 };
 
 const NAV_LINKS = [
@@ -12,7 +15,12 @@ const NAV_LINKS = [
   { to: "/trade", label: "Trade" },
 ];
 
-const Navbar = ({ setIsOpen }: NavbarProps) => {
+const Navbar = ({
+  setIsOpen,
+  user,
+  logoutUser,
+  isPublic = false,
+}: NavbarProps) => {
   const location = useLocation();
 
   return (
@@ -51,7 +59,22 @@ const Navbar = ({ setIsOpen }: NavbarProps) => {
           </nav>
         </div>
 
-        <LogoutContainer />
+        <div className="flex items-center gap-4 text-sm text-white">
+          {user ? (
+            <LogoutContainer user={user} logoutUser={logoutUser} />
+          ) : (
+            isPublic && (
+              <>
+                <Link to="/login" className="hover:underline">
+                  Login
+                </Link>
+                <Link to="/register" className="hover:underline">
+                  Register
+                </Link>
+              </>
+            )
+          )}
+        </div>
       </div>
     </header>
   );

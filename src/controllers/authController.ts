@@ -27,13 +27,25 @@ export const login = async (req: Request, res: Response) => {
     expires: new Date(Date.now() + oneDay),
     secure: process.env.NODE_ENV === "production",
   });
+  res.cookie("isLoggedIn", "true", {
+    expires: new Date(Date.now() + oneDay),
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
   res.status(StatusCodes.OK).json({ msg: "user logged in" });
 };
 
 export const logout = (req: Request, res: Response) => {
-  res.cookie("token", "logout", {
+  res.clearCookie("token", {
     httpOnly: true,
-    expires: new Date(Date.now()),
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
   });
-  res.status(StatusCodes.OK).json({ msg: "user logged out!" });
+
+  res.clearCookie("isLoggedIn", {
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.status(200).json({ msg: "user logged out" });
 };

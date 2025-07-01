@@ -24,7 +24,6 @@ import {
 import { action as registerAction } from "../pages/Register";
 import { action as loginAction } from "../pages/Login";
 import { loader as dashboardLoader } from "../pages/DashboardLayout";
-import { loader as homeLoader } from "../pages/HomeLayout";
 import { loader as allItemsLoader } from "../pages/AllItems";
 import { loader as allTradeItemsLoader } from "../pages/AllTradeItems";
 import { loader as OrdersLoader } from "../pages/Orders";
@@ -34,13 +33,15 @@ import { action as addItemAction } from "../pages/AddItem";
 import { action as SingleOrderAction } from "../pages/Order";
 import { action as TradeOfferAction } from "../pages/AllTradeItems";
 import { loader as TradeOffersLoader } from "../pages/TradeOffers";
+import { loader as homeLayoutLoader } from "../pages/HomeLayout";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <HomeLayout />,
+    loader: homeLayoutLoader,
+
     errorElement: <Error />,
-    loader: homeLoader,
 
     children: [
       { index: true, element: <Landing /> },

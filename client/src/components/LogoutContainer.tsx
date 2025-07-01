@@ -1,19 +1,22 @@
 import { FaUserCircle, FaCaretDown } from "react-icons/fa";
 import { useState } from "react";
-import { useUserContext } from "../hooks/useUserContext";
 
-const LogoutContainer: React.FC = () => {
+type Props = {
+  user: { name: string; avatar?: string };
+  logoutUser?: () => void;
+};
+
+const LogoutContainer: React.FC<Props> = ({ user, logoutUser }) => {
   const [showLogout, setShowLogout] = useState(false);
-  const { user, logoutUser } = useUserContext();
 
   return (
-    <div className="relative">
+    <div className="relative text-white">
       <button
         type="button"
-        className="flex items-center justify-center gap-2 btn"
+        className="flex items-center gap-2"
         onClick={() => setShowLogout((prev) => !prev)}
       >
-        {user?.avatar ? (
+        {user.avatar ? (
           <img
             src={user.avatar}
             alt="avatar"
@@ -22,21 +25,21 @@ const LogoutContainer: React.FC = () => {
         ) : (
           <FaUserCircle className="w-6 h-6" />
         )}
-        <span className="ml-2">{user?.name}</span>
+        <span className="ml-2">{user.name}</span>
         <FaCaretDown className="ml-1" />
       </button>
 
       <div
-        className={`absolute top-[45px] left-0 w-full text-center rounded-md bg-primary-500 shadow-md ${
-          showLogout ? "visible" : "invisible"
+        className={`absolute top-[45px] left-0 w-full text-center text-white rounded-md bg-primary-500 shadow-md z-50 ${
+          showLogout ? "block" : "hidden"
         }`}
       >
         <button
           type="button"
-          className="w-full px-4 py-2 bg-transparent border-none text-white tracking-wide capitalize cursor-pointer"
+          className="w-full px-4 py-2 bg-transparent border-none text-white capitalize cursor-pointer"
           onClick={logoutUser}
         >
-          logout
+          Logout
         </button>
       </div>
     </div>
