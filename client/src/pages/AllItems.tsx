@@ -50,7 +50,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return null;
     }
 
-    await customFetch.post("/order", {
+    await customFetch.post("/orders", {
       cartItems,
       paymentMethod,
       shippingAddress: address,
@@ -59,6 +59,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     toast.success("Order placed successfully");
     return redirect("/shop");
   } catch (error: any) {
+    if (error?.response?.status === 401) {
+      toast.error("Login to shop");
+      return redirect("/login");
+    }
     toast.error(error?.response?.data?.message || "Failed to place the order");
   }
 };
@@ -68,7 +72,6 @@ const AllItems: React.FC = () => {
   const { pathname } = useLocation();
   const [cartItems, setCartItems] = useState<Item[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const handleModalOpen = () => setIsModalOpen(true);
   const handleModalClose = () => setIsModalOpen(false);
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
@@ -114,7 +117,7 @@ const AllItems: React.FC = () => {
               value={JSON.stringify(cartItems)}
             />
             <input type="hidden" name="paymentMethod" value="cashondelivery" />
-            <label className="text-white font-semibold">
+            <label className="text-black font-semibold">
               Shipping Address:
               <input
                 type="text"
@@ -125,7 +128,7 @@ const AllItems: React.FC = () => {
             </label>
             <button
               type="submit"
-              className="mt-2 bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700"
+              className="mt-2 bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
               disabled={cartItems.length === 0}
             >
               Place Order
@@ -133,9 +136,9 @@ const AllItems: React.FC = () => {
           </Form>
           <button
             onClick={handleModalClose}
-            className="mt-4 bg-blue-600 text-white py-2 px-4 rounded"
+            className="mt-4 bg-slate-600 text-white py-2 px-4 rounded"
           >
-            Close
+            Cancel
           </button>
         </Modal>
       </div>
@@ -146,7 +149,7 @@ const AllItems: React.FC = () => {
           return (
             <div
               key={item.itemId}
-              className="relative text-white shadow-md rounded-lg overflow-hidden border hover:shadow-lg transition-shadow"
+              className="relative bg-slate-600 border-2 border-black text-white shadow-md rounded-lg overflow-hidden border hover:shadow-lg transition-shadow"
             >
               <img
                 src={item.img}
@@ -175,7 +178,7 @@ const AllItems: React.FC = () => {
                 className={`w-full flex justify-center border-2 ${
                   isInCart
                     ? "bg-red-400 border-red-400"
-                    : "bg-black border-white"
+                    : "bg-slate-800 border-slate-800"
                 } hover:bg-opacity-90 text-white font-bold py-2 px-4 text-2xl transition-colors duration-300`}
                 onClick={() => handleAddToCart(item)}
               >

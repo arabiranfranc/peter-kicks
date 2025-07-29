@@ -1,10 +1,11 @@
-import { Form, Link, redirect, useNavigation } from "react-router-dom";
+import { Form, Link, redirect } from "react-router-dom";
 import FormRow from "../components/FormRow";
 import sneaker from "../assets/sneaker.png";
 import customFetch from "../utils/customFetch";
 import type { ActionFunctionArgs } from "react-router-dom";
 import SubmitBtn from "../components/SubmitBtm";
 import { toast } from "sonner";
+import React, { useState, useEffect } from "react";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
@@ -21,13 +22,42 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   try {
     await customFetch.post("/auth/register", data);
     toast.success("User Register Successfully");
-    return redirect("/login");
+    // return redirect("/login");
   } catch (error) {
     console.log(error);
   }
 };
 
 const Register: React.FC = () => {
+  const [showSecret, setShowSecret] = useState(false);
+
+  useEffect(() => {
+    const pressedKeys = new Set<string>();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      pressedKeys.add(e.key);
+
+      if (
+        pressedKeys.has("Control") &&
+        pressedKeys.has("F9") &&
+        pressedKeys.has("F11")
+      ) {
+        setShowSecret((prev) => !prev);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      pressedKeys.delete(e.key);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, []);
+
   return (
     <div className="relative">
       <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-10">
@@ -57,6 +87,11 @@ const Register: React.FC = () => {
               labelText="Birthday"
               defaultValue="2000-01-01"
             />
+
+            {showSecret && (
+              <FormRow type="text" name="secretKey" labelText="Secret Key" />
+            )}
+
             <SubmitBtn />
 
             <p className="text-sm text-center text-gray-600">

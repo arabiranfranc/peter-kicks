@@ -1,6 +1,7 @@
 import { StatusCodes } from "http-status-codes";
 import { Request, Response } from "express";
 import Item from "../models/ItemModel.js";
+import Order from "../models/OrderModel.js";
 import { ITEM_STATUS } from "../utils/constants.js";
 
 export const getDashboardStats = async (
@@ -30,22 +31,22 @@ export const getDashboardStats = async (
       ...dateFilter,
     };
 
-    const acceptedItems = await Item.find({
+    const completedOrders = await Item.find({
       ...baseFilter,
-      itemStatus: ITEM_STATUS.ACCEPTED,
+      itemStatus: ITEM_STATUS.COMPLETED,
     });
 
-    const totalAcceptedItems = acceptedItems.length;
-    const totalEarnings = acceptedItems.reduce((sum, item) => {
+    const totalCompletedOrders = completedOrders.length;
+    const totalEarnings = completedOrders.reduce((sum, item) => {
       return sum + ((item.price || 0) - (item.op || 0));
     }, 0);
 
-    const totalPendingItems = await Item.countDocuments({
+    const totalPendingOrders = await Item.countDocuments({
       ...baseFilter,
       itemStatus: ITEM_STATUS.PENDING,
     });
 
-    const totalRejectedItems = await Item.countDocuments({
+    const totalRejectedOrders = await Item.countDocuments({
       ...baseFilter,
       itemStatus: ITEM_STATUS.DECLINED,
     });
@@ -54,7 +55,7 @@ export const getDashboardStats = async (
       {
         $match: {
           createdBy: userId,
-          itemStatus: ITEM_STATUS.ACCEPTED,
+          itemStatus: ITEM_STATUS.COMPLETED,
           ...(dateFilter.createdAt ? { createdAt: dateFilter.createdAt } : {}),
         },
       },
@@ -83,12 +84,26 @@ export const getDashboardStats = async (
       },
     ]);
 
+    // 🟩 Total itemsCount from completed orders where user is the seller
+    const completedOrdersFromOrders = await Order.find({
+      status: ITEM_STATUS.COMPLETED,
+    }).populate("items.itemId", "createdBy");
+
+    let totalItemsCount = 0;
+    for (const order of completedOrdersFromOrders) {
+      const userItems = order.items.filter(
+        (item: any) => item.itemId?.createdBy?.toString() === userId
+      );
+      totalItemsCount += userItems.length;
+    }
+
     res.status(StatusCodes.OK).json({
-      totalAcceptedItems,
-      totalPendingItems,
-      totalRejectedItems,
+      totalCompletedOrders,
+      totalPendingOrders,
+      totalRejectedOrders,
       totalEarnings,
       monthlyEarnings,
+      totalItemsCount, // 👈 Added in response
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);

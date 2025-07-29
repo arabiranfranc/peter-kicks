@@ -23,7 +23,6 @@ const OrderSchema = new mongoose.Schema(
       type: String,
       enum: [
         "pending",
-        "shipped",
         "delivered",
         "cancelled",
         "completed",
@@ -31,6 +30,10 @@ const OrderSchema = new mongoose.Schema(
         "declined",
       ],
       default: "pending",
+    },
+    itemsCount: {
+      type: Number,
+      default: 1,
     },
   },
   {

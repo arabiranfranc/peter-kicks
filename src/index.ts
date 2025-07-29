@@ -11,6 +11,7 @@ import authRouter from "./routes/authRouter.js";
 import userRouter from "./routes/userRouter.js";
 import orderRouter from "./routes/orderRouter.js";
 import tradeItemsRouter from "./routes/tradeItemsRouter.js";
+import tradeRouter from "./routes/tradeRouter.js";
 import dashboardRouter from "./routes/dashboardRouter.js";
 
 import mongoose from "mongoose";
@@ -54,6 +55,7 @@ app.post("/", (req, res) => {
 app.use("/api/shop", itemRouter);
 app.use("/api/orders", authenticateUser, orderRouter);
 app.use("/api/trade", tradeItemsRouter);
+app.use("/api/trade-offers", authenticateUser, tradeRouter);
 app.use("/api/users", authenticateUser, userRouter);
 app.use("/api/dashboard", authenticateUser, dashboardRouter);
 app.use("/api/auth", authRouter);

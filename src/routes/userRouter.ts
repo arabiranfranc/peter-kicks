@@ -2,7 +2,6 @@ import { Router } from "express";
 import {
   getCurrentUser,
   getApplicationStats,
-  updateUser,
 } from "../controllers/userController.js";
 import { authorizePermissions } from "../middleware/authMiddleWare.js";
 
@@ -13,5 +12,4 @@ router.get("/admin/app-stats", [
   authorizePermissions("admin"),
   getApplicationStats,
 ]);
-router.patch("/update-user", updateUser);
 export default router;

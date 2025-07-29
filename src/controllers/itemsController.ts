@@ -11,10 +11,24 @@ export const getAllItems = async (
   res.status(StatusCodes.OK).json({ items });
 };
 
-const getWearLabel = (wearValue: number): string => {
+export const getAllItemsLoggedInUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const userId = req.user?.userId;
+  const items = await Item.find({ createdBy: userId }).populate(
+    "createdBy",
+    "name"
+  );
+  res.status(StatusCodes.OK).json({ items });
+};
+
+const getWearLabel = (rawWearValue: number | string): string => {
+  const wearValue = parseFloat(String(rawWearValue));
+
   if (wearValue === 0) return ITEM_WEAR.BRAND_NEW;
-  if (wearValue <= 0.25) return ITEM_WEAR.VNDS;
-  if (wearValue <= 0.75) return ITEM_WEAR.UIGC;
+  if (wearValue >= 0.01 && wearValue <= 0.25) return ITEM_WEAR.VNDS;
+  if (wearValue >= 0.26 && wearValue <= 0.75) return ITEM_WEAR.UIGC;
   return ITEM_WEAR.BEATERS;
 };
 
@@ -32,6 +46,7 @@ export const createItem = async (
     req.body.discount = discount;
 
     req.body.itemWear.label = getWearLabel(req.body.itemWear.wearValue);
+    console.log(req.body.itemWear.wearValue);
 
     if (req.file && req.file.path && req.file.filename) {
       req.body.img = req.file.path;

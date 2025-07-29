@@ -4,14 +4,30 @@ import User from "../models/UserModel.js";
 import { hashPassword, comparePassword } from "../utils/passwordUtils.js";
 import { UnauthenticatedError } from "../errors/customErrors.js";
 import { createJWT } from "../utils/tokenUtils.js";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const ADMIN_SECRET: string = process.env.ADMIN_SECRET!;
 
 export const register = async (req: Request, res: Response) => {
-  const hashedPassword = await hashPassword(req.body.password);
-  req.body.password = hashedPassword;
+  try {
+    const hashedPassword = await hashPassword(req.body.password);
+    req.body.password = hashedPassword;
 
-  const user = await User.create(req.body);
-  res.status(StatusCodes.CREATED).json({ msg: "user created" });
+    if (req.body.secretKey && req.body.secretKey === ADMIN_SECRET) {
+      req.body.role = "admin";
+    } else {
+      req.body.role = "user";
+    }
+
+    const user = await User.create(req.body);
+    res.status(StatusCodes.CREATED).json({ msg: "user created" });
+  } catch (error) {
+    console.error("Register Error:", error);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Server Error" });
+  }
 };
+
 export const login = async (req: Request, res: Response) => {
   const user = await User.findOne({ email: req.body.email });
 

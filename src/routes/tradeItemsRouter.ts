@@ -6,12 +6,7 @@ import {
   updateTradeItem,
   deleteTradeItem,
 } from "../controllers/tradeItemsController.js";
-import {
-  createTradeOffer,
-  deleteTradeOffer,
-  getUserTradeOffers,
-  updateTradeOffer,
-} from "../controllers/tradeController.js";
+
 import { upload } from "../middleware/cloudinaryMulterMiddleware.js";
 import {
   validateItemIdParam,
@@ -27,11 +22,6 @@ router
   .post(upload.single("img"), validateTradeItemInput, createTradeItem);
 
 router
-  .route("/trade-offer")
-  .get(getUserTradeOffers)
-  .post(upload.array("images", 5), validateTradeOfferInput, createTradeOffer);
-
-router
   .route("/:id")
   .get(validateItemIdParam, getTradeItem)
   .patch(
@@ -42,8 +32,4 @@ router
   )
   .delete(validateItemIdParam, deleteTradeItem);
 
-router
-  .route("/trade-offer/:id")
-  .patch(updateTradeOffer)
-  .delete(deleteTradeOffer);
 export default router;

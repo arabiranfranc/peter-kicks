@@ -29,7 +29,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
       status: newStatus,
     });
     toast.success(`Order marked as "${newStatus}"`);
-    return redirect(`/dashboard/orders/${params.orderId}`); // reload order page
+    return redirect(`/dashboard/shop/orders/${params.orderId}`); // reload order page
   } catch (error) {
     console.error("Update order status failed:", error);
     toast.error("Failed to update status.");

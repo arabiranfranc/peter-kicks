@@ -58,6 +58,7 @@ export const createOrder = async (
       shippingAddress,
       paymentMethod,
       status: "pending",
+      itemsCount: orderItems.length,
     });
 
     const savedOrder = await newOrder.save();
@@ -125,6 +126,7 @@ export const getSingleOrder = async (
     res.status(StatusCodes.OK).json({
       message: "Order fetched successfully",
       order,
+      itemsCount: order.items.length,
     });
   } catch (error) {
     console.error("Error fetching order:", error);

@@ -14,6 +14,7 @@ import {
   Order,
   AllTradeItems,
   TradeOffers,
+  Users,
 } from "../pages";
 // import RootLayout from './RootLayout';
 // import Home from '../pages/Home';
@@ -34,6 +35,9 @@ import { action as SingleOrderAction } from "../pages/Order";
 import { action as TradeOfferAction } from "../pages/AllTradeItems";
 import { loader as TradeOffersLoader } from "../pages/TradeOffers";
 import { loader as homeLayoutLoader } from "../pages/HomeLayout";
+import { loader as userShopLoader } from "../pages/AddItem";
+import { loader as allUsersLoader } from "../pages/Users";
+import { loader as dashboardPageLoader } from "../pages/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -74,11 +78,16 @@ const router = createBrowserRouter([
     element: <DashboardLayout />,
     loader: dashboardLoader,
     children: [
-      { index: true, element: <Dashboard /> },
+      {
+        index: true,
+        element: <Dashboard />,
+        loader: dashboardPageLoader,
+      },
       {
         path: "shop/add-item",
         element: <AddItem />,
         action: addItemAction,
+        loader: userShopLoader,
       },
       {
         path: "trade/add-item",
@@ -90,15 +99,20 @@ const router = createBrowserRouter([
         loader: TradeOffersLoader,
       },
       {
-        path: "orders",
+        path: "shop/orders",
         element: <Orders />,
         loader: OrdersLoader,
       },
       {
-        path: "orders/:orderId",
+        path: "shop/orders/:orderId",
         element: <Order />,
         loader: SingleOrderLoader,
         action: SingleOrderAction,
+      },
+      {
+        path: "admin/users",
+        element: <Users />,
+        loader: allUsersLoader,
       },
     ],
   },

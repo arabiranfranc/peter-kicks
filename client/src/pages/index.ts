@@ -14,3 +14,4 @@ export { default as Orders } from "./Orders";
 export { default as Order } from "./Order";
 export { default as AllTradeItems } from "./AllTradeItems";
 export { default as TradeOffers } from "./TradeOffers";
+export { default as Users } from "./Users";

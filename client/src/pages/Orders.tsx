@@ -42,7 +42,7 @@ const getStatusStyle = (status: string) => {
   const styles: Record<string, string> = {
     pending: "bg-yellow-100 border-yellow-500",
     shipped: "bg-blue-50 border-blue-300",
-    delivered: "bg-green-50 border-green-300",
+    completed: "bg-green-50 border-green-300",
     cancelled: "bg-gray-100 border-gray-300",
     accepted: "bg-emerald-50 border-emerald-300",
     declined: "bg-red-50 border-red-300",
@@ -62,7 +62,7 @@ const Orders: React.FC = () => {
       ) : (
         <div>
           {orders.map((order) => (
-            <Link to={`/dashboard/orders/${order.orderId}`}>
+            <Link to={`/dashboard/shop/orders/${order.orderId}`}>
               <div
                 key={order.orderId}
                 className={`border-4 rounded-2xl p-4 shadow-sm mt-2 ${getStatusStyle(
