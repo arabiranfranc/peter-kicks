@@ -4,9 +4,19 @@ import {
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
+  useOutletContext,
 } from "react-router-dom";
 import customFetch from "../utils/customFetch";
 import { toast } from "sonner";
+
+type OutletContextType = {
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    // Add any other user fields as needed
+  };
+};
 
 export const loader = async ({ params }: LoaderFunctionArgs): Promise<any> => {
   try {
@@ -39,6 +49,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
 const Order: React.FC = () => {
   const order = useLoaderData() as any;
+  const { user } = useOutletContext<OutletContextType>();
 
   if (!order) {
     return <p className="text-center text-gray-500">Order not found.</p>;
@@ -46,41 +57,45 @@ const Order: React.FC = () => {
 
   const renderActions = () => {
     const status = order.status.toLowerCase();
+    const isOrderOwner = user._id === order.user._id;
+    console.log(order);
     if (status === "pending") {
       return (
         <div className="flex gap-2 mt-4">
+          {!isOrderOwner && (
+            <Form method="post">
+              <button
+                name="status"
+                value="accepted"
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Accept
+              </button>
+            </Form>
+          )}
           <Form method="post">
             <button
               name="status"
-              value="accepted"
-              className="bg-green-600 text-white px-4 py-2 rounded"
-            >
-              Accept
-            </button>
-          </Form>
-          <Form method="post">
-            <button
-              name="status"
-              value="declined"
+              value="cancelled"
               className="bg-red-600 text-white px-4 py-2 rounded"
             >
-              Decline
+              Cancel
             </button>
           </Form>
         </div>
       );
     }
 
-    if (status === "accepted" || status === "declined") {
+    if (status === "accepted" && !isOrderOwner) {
       return (
         <div className="flex gap-2 mt-4">
           <Form method="post">
             <button
               name="status"
-              value="completed"
+              value="in_transit"
               className="bg-blue-600 text-white px-4 py-2 rounded"
             >
-              Complete
+              In Transit
             </button>
           </Form>
           <Form method="post">
@@ -95,8 +110,36 @@ const Order: React.FC = () => {
         </div>
       );
     }
+    if (status === "in_transit") {
+      // If either party already confirmed, don't show the buttons
+      if (!isOrderOwner && order.sellerConfirmed) return null;
+      if (isOrderOwner && order.orderConfirmed) return null;
 
-    return null; // if status is already "cancelled" or "completed"
+      return (
+        <div className="flex gap-2 mt-4">
+          <Form method="post">
+            <button
+              name="status"
+              value="completed"
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+            >
+              Completed
+            </button>
+          </Form>
+          <Form method="post">
+            <button
+              name="status"
+              value="cancelled"
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Cancel
+            </button>
+          </Form>
+        </div>
+      );
+    }
+
+    return null;
   };
 
   return (

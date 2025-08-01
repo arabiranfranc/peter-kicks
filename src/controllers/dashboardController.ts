@@ -41,9 +41,10 @@ export const getDashboardStats = async (
       return sum + ((item.price || 0) - (item.op || 0));
     }, 0);
 
-    const totalPendingOrders = await Item.countDocuments({
-      ...baseFilter,
-      itemStatus: ITEM_STATUS.PENDING,
+    const totalPendingOrders = await Order.countDocuments({
+      ...dateFilter,
+      user: userId,
+      status: ITEM_STATUS.PENDING,
     });
 
     const totalRejectedOrders = await Item.countDocuments({
@@ -84,7 +85,6 @@ export const getDashboardStats = async (
       },
     ]);
 
-    // 🟩 Total itemsCount from completed orders where user is the seller
     const completedOrdersFromOrders = await Order.find({
       status: ITEM_STATUS.COMPLETED,
     }).populate("items.itemId", "createdBy");
@@ -103,7 +103,7 @@ export const getDashboardStats = async (
       totalRejectedOrders,
       totalEarnings,
       monthlyEarnings,
-      totalItemsCount, // 👈 Added in response
+      totalItemsCount,
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);

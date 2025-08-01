@@ -1,11 +1,10 @@
 export const ITEM_STATUS = {
   PENDING: "pending",
   ACCEPTED: "accepted",
-  DECLINED: "declined",
-  SHIPPED: "shipped",
-  DELIVERED: "delivered",
   CANCELLED: "cancelled",
+  IN_TRANSIT: "in_transit",
   COMPLETED: "completed",
+  DECLINED: "declined",
 } as const;
 
 export type ItemStatus = (typeof ITEM_STATUS)[keyof typeof ITEM_STATUS];

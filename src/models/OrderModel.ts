@@ -21,21 +21,17 @@ const OrderSchema = new mongoose.Schema(
     paymentMethod: { type: String, required: true },
     status: {
       type: String,
-      enum: [
-        "pending",
-        "delivered",
-        "cancelled",
-        "completed",
-        "accepted",
-        "declined",
-      ],
+      enum: ["pending", "accepted", "cancelled", "in_transit", "completed"],
       default: "pending",
     },
     itemsCount: {
       type: Number,
       default: 1,
     },
+    buyerConfirmed: { type: Boolean, default: false },
+    sellerConfirmed: { type: Boolean, default: false },
   },
+
   {
     timestamps: true,
     toJSON: {

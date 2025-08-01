@@ -7,8 +7,57 @@ export const getAllItems = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const items = await Item.find().populate("createdBy", "name");
-  res.status(StatusCodes.OK).json({ items });
+  try {
+    const {
+      name,
+      minPrice,
+      maxPrice,
+      minSize,
+      maxSize,
+      itemWear, // can be string or array
+    } = req.query;
+
+    const query: any = {
+      itemStatus: "pending", // Only return pending items
+    };
+
+    // Name search
+    if (name && typeof name === "string") {
+      query.name = { $regex: name, $options: "i" };
+    }
+
+    // Price range
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
+    }
+
+    // Size range
+    if (minSize || maxSize) {
+      query.size = {};
+      if (minSize) query.size.$gte = Number(minSize);
+      if (maxSize) query.size.$lte = Number(maxSize);
+    }
+
+    // Item wear (can be multiple checkboxes)
+    if (itemWear) {
+      if (Array.isArray(itemWear)) {
+        query["itemWear.label"] = { $in: itemWear };
+      } else {
+        query["itemWear.label"] = itemWear;
+      }
+    }
+
+    const items = await Item.find(query).populate("createdBy", "name");
+
+    res.status(StatusCodes.OK).json({ items });
+  } catch (error) {
+    console.error("Error fetching filtered items:", error);
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Failed to fetch items" });
+  }
 };
 
 export const getAllItemsLoggedInUser = async (

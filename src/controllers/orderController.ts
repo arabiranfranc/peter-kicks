@@ -4,6 +4,11 @@ import Order from "../models/OrderModel.js";
 import Item, { ItemDoc } from "../models/ItemModel.js";
 import { ITEM_STATUS } from "../utils/constants.js";
 
+interface UpdateOrderStatusBody {
+  status: "accepted" | "cancelled" | "in_transit" | "completed";
+  forceComplete?: boolean;
+}
+
 export const createOrder = async (
   req: Request,
   res: Response
@@ -137,56 +142,128 @@ export const getSingleOrder = async (
 };
 
 export const updateOrderStatus = async (
-  req: Request,
+  req: Request<{ orderId: string }, {}, UpdateOrderStatusBody>,
   res: Response
 ): Promise<void> => {
   try {
     const { orderId } = req.params;
-    const { status } = req.body;
+    const { status, forceComplete = false } = req.body;
     const userId = req.user?.userId;
 
-    const allowedStatuses = Object.values(ITEM_STATUS);
-    if (!allowedStatuses.includes(status)) {
-      res.status(StatusCodes.BAD_REQUEST).json({
-        message: "Invalid status value",
-        allowed: allowedStatuses,
-      });
-      return;
-    }
+    const order = await Order.findById(orderId)
+      .populate("user", "id")
+      .populate("items.itemId", "createdBy");
 
-    const order = await Order.findById(orderId).populate("items.itemId");
     if (!order) {
       res.status(StatusCodes.NOT_FOUND).json({ message: "Order not found" });
       return;
     }
 
-    const unauthorizedItems = order.items.filter(
-      (item: any) => item.itemId?.createdBy?.toString() !== userId
-    );
-
-    if (unauthorizedItems.length > 0) {
-      res.status(StatusCodes.FORBIDDEN).json({
-        message: "You can only update orders containing your own items",
-      });
+    if (!order.user) {
+      res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json({ message: "Order user not populated" });
       return;
     }
 
-    order.status = status;
+    const isBuyer = order.user._id.toString() === userId;
+    const isSeller = order.items.some(
+      (item: any) => item.itemId.createdBy.toString() === userId
+    );
+
+    switch (status) {
+      case "accepted":
+        if (!isSeller) {
+          res.status(403).json({ message: "Only seller can accept the order" });
+          return;
+        }
+        if (order.status !== "pending") {
+          res.status(400).json({ message: "Order must be pending to accept" });
+          return;
+        }
+        order.status = "accepted";
+        break;
+
+      case "cancelled":
+        if (!(isSeller || isBuyer)) {
+          res.status(403).json({ message: "Unauthorized" });
+          return;
+        }
+        if (!["pending", "accepted"].includes(order.status as string)) {
+          res
+            .status(400)
+            .json({ message: "Cannot cancel after delivery has started" });
+          return;
+        }
+        order.status = "cancelled";
+        break;
+
+      case "in_transit":
+        if (!isSeller) {
+          res
+            .status(403)
+            .json({ message: "Only seller can mark as in transit" });
+          return;
+        }
+        if (order.status !== "accepted") {
+          res.status(400).json({ message: "Order must be accepted first" });
+          return;
+        }
+        order.status = "in_transit";
+        break;
+
+      case "completed":
+        if (!(isSeller || isBuyer)) {
+          res.status(403).json({ message: "Unauthorized" });
+          return;
+        }
+
+        if (order.status !== "in_transit") {
+          res
+            .status(400)
+            .json({ message: "Order must be in transit before completing." });
+          return;
+        }
+
+        if (forceComplete && isSeller) {
+          order.status = "completed";
+        } else {
+          if (isBuyer) order.buyerConfirmed = true;
+          if (isSeller) order.sellerConfirmed = true;
+
+          if (order.buyerConfirmed && order.sellerConfirmed) {
+            order.status = "completed";
+          } else {
+            await order.save();
+            res.status(202).json({
+              message:
+                "Waiting for both buyer and seller to confirm completion",
+              order,
+            });
+            return;
+          }
+        }
+        break;
+
+      default:
+        res.status(400).json({ message: "Invalid status transition" });
+        return;
+    }
+
     await order.save();
 
-    if (status !== ITEM_STATUS.DECLINED && status !== ITEM_STATUS.CANCELLED) {
+    if (
+      ["accepted", "in_transit", "completed"].includes(order.status as string)
+    ) {
       const itemIds = order.items.map((item: any) => item.itemId._id);
       await Item.updateMany(
         { _id: { $in: itemIds } },
-        { $set: { itemStatus: status } }
+        { $set: { itemStatus: order.status } }
       );
     }
 
-    res.status(StatusCodes.OK).json({
-      message:
-        status === ITEM_STATUS.DECLINED || status === ITEM_STATUS.CANCELLED
-          ? "Order status updated (items remain pending)"
-          : "Order and item statuses updated successfully",
+    res.status(200).json({
+      message: `Order status updated to ${order.status}`,
       order,
     });
   } catch (error) {
